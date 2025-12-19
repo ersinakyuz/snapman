@@ -1,0 +1,16 @@
+# Binaries
+snapman
+snapman.test
+*.so
+*.dylib
+
+# Go build artifacts
+*.o
+*.a
+
+# Dependency directories 
+vendor/
+
+# IDE specific
+.vscode/
+*.swp
