@@ -62,21 +62,29 @@ Bash
 Example Output
 Plaintext
 ```bash
---- SnapMan v1.0: Cleanup Tool ---
-Scanning system...
+SnapMan starting...
 
-3 disabled revisions found:
+System scanning...
+Found 15 disabled revisions. Potential gain: 3.57 GB
 
-PACKAGE  VERSION   REVISION
--------  -------   --------
-spotify  1.1.84    x1
-vlc      3.0.18    22
-code     1.74.0    old_ver
+PACKAGE                 VERSION                     REV    SIZE        STATUS
+-------                 -------                     ---    ----        ------
+brave                   1.85.117                    578    186.37 MB   Ready
+chromium-ffmpeg         120726-120170-119605-1...   88     7.27 MB     Ready
+core18                  20251001                    2959   55.49 MB    Ready
+core20                  20250822                    2682   63.77 MB    Ready
+core22                  20250923                    2139   73.91 MB    Ready
+core24                  20251001                    1225   66.84 MB    Ready
+firefox                 145.0.2-1                   7423   250.58 MB   Ready
+gnome-46-2404           0+git.4ca00c0-sdk0+git...   125    618.26 MB   Ready
+libreoffice             25.8.3.2                    362    1.17 GB     Ready
+lxqt-support            2025-10                     7      4.21 MB     Ready
+mesa-2404               24.2.8-snap185              912    290.77 MB   Ready
+opera                   125.0.5729.21               416    179.11 MB   Ready
+telegram-desktop        6.3.8                       6880   82.02 MB    Ready
+thunderbird             140.5.0esr-2                915    226.32 MB   Ready
+wine-platform-runtime   v1.0                        399    346.89 MB   Ready
 
-Starting cleanup...
-Removing: spotify (Rev: x1)... ✓ OK
-Removing: vlc (Rev: 22)... ✓ OK
-Removing: code (Rev: old_ver)... ✓ OK
 
 Operation Complete.
 ```
