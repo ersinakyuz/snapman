@@ -35,7 +35,7 @@ You can build SnapMan from source. Ensure you have **Go 1.20+** installed.
 
 ```bash
 # 1. Clone the repository
-git clone [https://github.com/ersinakyuz/snapman.git](https://github.com/ersinakyuz/snapman.git)
+git clone https://github.com/ersinakyuz/snapman.git
 cd snapman
 
 # 2. Tidy dependencies
