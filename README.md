@@ -26,6 +26,8 @@ Ubuntu keeps older versions of snaps (by default 3 revisions) for safety during 
 SnapMan helps you by:
 * 🧹 Parsing `snap list --all` output efficiently.
 * 🔍 Identifying only **disabled** revisions.
+* ✅ Integrity Verification: Automatically verifies the physical presence of files on your filesystem before reporting.
+* 📊 Reclaim Analysis: Calculates and displays the total potential disk space gain at the end of the operation.
 * 🛡️ **Safe Execution:** Targets specific revisions without affecting active packages.
 * 🌍 **Locale Safe:** Works correctly even if your system language is set to German, Turkish, etc.
 
