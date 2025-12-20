@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/ersinakyuz/SnapMan/internal/snapsys"
@@ -22,14 +25,13 @@ const (
 )
 
 func main() {
+	dryRun := flag.Bool("dry-run", false, "List disabled revisions without removing them")
+	var assumeYes bool
+	flag.BoolVar(&assumeYes, "assume-yes", false, "Proceed without confirmation prompt")
+	flag.BoolVar(&assumeYes, "yes", false, "Alias for --assume-yes")
+	flag.Parse()
+
 	fmt.Println(ColorBold + ColorBlue + "SnapMan starting..." + ColorReset)
-
-	if !snapsys.CheckRoot() {
-		fmt.Println("This tool requires root privileges. Please run with 'sudo'.")
-		os.Exit(1)
-	}
-
-	fmt.Print("\nSystem scanning...")
 
 	items, err := snapsys.GetDisabledSnaps()
 	if err != nil {
@@ -77,8 +79,61 @@ func main() {
 	w.Flush()
 	fmt.Println("")
 
+	if *dryRun {
+		fmt.Println("Dry run enabled: no removals executed.")
+		fmt.Println("\nOperation Complete.")
+		return
+	}
+
+	if !snapsys.CheckRoot() {
+		fmt.Println("This tool requires root privileges. Please run with 'sudo'.")
+		os.Exit(1)
+	}
+
+	if !confirmProceed(len(items), assumeYes) {
+		fmt.Println("Aborted. No changes made.")
+		return
+	}
+
+	var removedCount, skippedMissing int
+	var reclaimedBytes int64
+
+	for _, item := range items {
+		if !item.FileFound {
+			skippedMissing++
+			fmt.Printf("Skipping %s (revision %s): file missing on disk.\n", item.Name, item.Revision)
+			continue
+		}
+
+		if err := snapsys.RemoveSnap(item); err != nil {
+			fmt.Printf("Failed to remove %s (revision %s): %v\n", item.Name, item.Revision, err)
+			continue
+		}
+
+		removedCount++
+		reclaimedBytes += item.SizeBytes
+		fmt.Printf("Removed %s (revision %s) [%s]\n", item.Name, item.Revision, item.SizeHuman)
+	}
+
+	fmt.Printf("\nSummary: removed %d, skipped (missing) %d, reclaimed %s.\n",
+		removedCount, skippedMissing, formatTotal(reclaimedBytes))
+
 	fmt.Println("\nOperation Complete.")
 }
+
+func confirmProceed(count int, assumeYes bool) bool {
+	if assumeYes {
+		return true
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("Proceed to remove %d revisions? [y/N]: ", count)
+	response, _ := reader.ReadString('\n')
+	response = strings.TrimSpace(strings.ToLower(response))
+
+	return response == "y" || response == "yes"
+}
+
 func formatTotal(bytes int64) string {
 	const unit = 1024
 	if bytes < unit {
