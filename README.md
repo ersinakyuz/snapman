@@ -64,9 +64,10 @@ Bash
 Example Output
 Plaintext
 ```bash
+eakyuez@ubuntu:~$ ./snapman --dry-run 
+
 SnapMan starting...
 
-System scanning...
 Found 15 disabled revisions. Potential gain: 3.57 GB
 
 PACKAGE                 VERSION                     REV    SIZE        STATUS
@@ -87,8 +88,28 @@ telegram-desktop        6.3.8                       6880   82.02 MB    Ready
 thunderbird             140.5.0esr-2                915    226.32 MB   Ready
 wine-platform-runtime   v1.0                        399    346.89 MB   Ready
 
+Dry run enabled: no removals executed.
 
 Operation Complete.
+```
+
+```
+eakyuez@ubuntu:~$ sudo ./snapman 
+[sudo] password for eakyuez: 
+SnapMan starting...
+
+Found 5 disabled revisions. Potential gain: 293.25 MB
+
+PACKAGE               VERSION         REV     SIZE       STATUS
+-------               -------         ---     ----       ------
+canonical-livepatch   10.11.9         364     13.39 MB   Ready
+core20                20250822        2682    63.77 MB   Ready
+core22                20250923        2139    73.91 MB   Ready
+lxd                   5.0.5-5c60378   36558   91.40 MB   Ready
+snapd                 2.71            25202   50.77 MB   Ready
+
+Proceed to remove 5 revisions? [y/N]: n
+Aborted. No changes made.
 ```
 
 ## 📂 Project Structure
