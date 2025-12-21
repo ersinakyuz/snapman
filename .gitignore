@@ -1,6 +1,8 @@
-# Binaries
-snapman
-snapman.test
+# Binaries (only repo root)
+ /snapman
+ /snapman.test
+
+# Shared libraries
 *.so
 *.dylib
 
@@ -8,7 +10,7 @@ snapman.test
 *.o
 *.a
 
-# Dependency directories 
+# Dependency directories
 vendor/
 
 # IDE specific
