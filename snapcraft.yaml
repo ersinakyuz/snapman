@@ -10,6 +10,9 @@ contact: https://github.com/ersinakyuz/snapman/issues
 issues: https://github.com/ersinakyuz/snapman/issues
 source-code: https://github.com/ersinakyuz/snapman
 website: https://github.com/ersinakyuz/snapman
+title: SnapMan
+donation: https://github.com/sponsors/ersinakyuz
+
 
 description: |
   SnapMan is a lightweight CLI tool that safely cleans up disabled
