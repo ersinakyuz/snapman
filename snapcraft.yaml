@@ -20,7 +20,7 @@ description: |
 
 apps:
   snapman:
-    command: snapman
+    command: bin/snapman
 
 parts:
   snapman:
@@ -30,7 +30,7 @@ parts:
       - go/1.20/stable
     build-packages:
       - git
-    go-channel: 1.20/stable
     override-build: |
       set -eux
-      snapcraftctl build
+      craftctl default
+      ls -la $CRAFT_PART_INSTALL/bin
