@@ -152,9 +152,9 @@ snapman/
 
     [x] Locale-independent parsing (LC_ALL=C logic)
 
-    [ ] Dry-Run mode (--dry-run flag for simulation)
+    [x] Dry-Run mode (--dry-run flag for simulation)
 
-    [ ] Interactive Confirmation (Yes/No prompt)
+    [x] Interactive Confirmation (Yes/No prompt)
 
     [ ] TUI (Terminal User Interface) - Planned with Bubbletea
 
