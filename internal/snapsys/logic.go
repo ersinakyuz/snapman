@@ -3,11 +3,14 @@ package snapsys
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"time"
 )
 
 // SnapItem holds the metadata and physical status of a snap revision
@@ -20,6 +23,11 @@ type SnapItem struct {
 	FileFound bool
 	FilePath  string // The actual path found on the filesystem
 }
+
+var (
+	snapNamePattern     = regexp.MustCompile(`^[a-z0-9-]+$`)
+	snapRevisionPattern = regexp.MustCompile(`^[0-9]+$`)
+)
 
 // CheckRoot checks if the user has root privileges (required for snap operations)
 func CheckRoot() bool {
@@ -38,6 +46,26 @@ func formatSize(bytes int64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.2f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
+func getSnapBinaryPath() (string, error) {
+	// Use fixed, trusted locations instead of resolving "snap" from PATH.
+	candidates := []string{"/usr/bin/snap", "/snap/bin/snap"}
+	for _, p := range candidates {
+		info, err := os.Stat(p)
+		if err != nil || info.IsDir() {
+			continue
+		}
+		if info.Mode()&0111 != 0 {
+			return p, nil
+		}
+	}
+
+	return "", fmt.Errorf("snap binary not found in trusted locations")
+}
+
+func isValidSnapID(name, revision string) bool {
+	return snapNamePattern.MatchString(name) && snapRevisionPattern.MatchString(revision)
 }
 
 // findSnapFile attempts to locate the actual .snap file using Pattern Matching (Globbing)
@@ -84,7 +112,14 @@ func findSnapFile(name, revision string) (string, int64, bool) {
 
 // GetDisabledSnaps runs 'snap list', parses the output, and performs filesystem verification
 func GetDisabledSnaps() ([]SnapItem, error) {
-	cmd := exec.Command("snap", "list", "--all")
+	snapPath, err := getSnapBinaryPath()
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, snapPath, "list", "--all")
 
 	// Force locale to English to ensure parsing consistency (avoids "disabled" translation issues)
 	cmd.Env = append(os.Environ(), "LANG=en_US.UTF-8")
@@ -101,10 +136,15 @@ func GetDisabledSnaps() ([]SnapItem, error) {
 		line := scanner.Text()
 		fields := strings.Fields(line)
 
-		// We need at least 3 fields (Name, Version, Rev) and the line must contain "disabled"
-		if len(fields) >= 3 && strings.Contains(line, "disabled") {
+		// We need at least 5 fields (Name, Version, Rev, Tracking, Publisher/Notes)
+		// and Notes should include "disabled".
+		if len(fields) >= 5 {
 			name := fields[0]
 			rev := fields[2]
+			notes := strings.Join(fields[4:], " ")
+			if !strings.Contains(notes, "disabled") || !isValidSnapID(name, rev) {
+				continue
+			}
 
 			// Perform smart file lookup
 			realPath, sizeBytes, found := findSnapFile(name, rev)
@@ -127,12 +167,27 @@ func GetDisabledSnaps() ([]SnapItem, error) {
 		}
 	}
 
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("failed to parse snap list output: %v", err)
+	}
+
 	return candidates, nil
 }
 
 // RemoveSnap executes the snap remove command for a specific revision
 func RemoveSnap(item SnapItem) error {
+	if !isValidSnapID(item.Name, item.Revision) {
+		return fmt.Errorf("invalid snap name or revision")
+	}
+
+	snapPath, err := getSnapBinaryPath()
+	if err != nil {
+		return err
+	}
+
 	// snap remove <name> --revision=<id>
-	cmd := exec.Command("snap", "remove", item.Name, fmt.Sprintf("--revision=%s", item.Revision))
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, snapPath, "remove", item.Name, fmt.Sprintf("--revision=%s", item.Revision))
 	return cmd.Run()
 }
